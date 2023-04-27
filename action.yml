@@ -3,8 +3,7 @@ description: 'Action for deploy'
 inputs:
   app-name:
     description: 'Application id'
-    required: false
-    default: ''
+    required: true
   aws-role:
     description: 'Aws role to apply changes'
     required: true
@@ -28,6 +27,9 @@ inputs:
   tag:
     description: 'Tag to deploy'
     default: ''
+  team:
+    description: 'Team name for ECR'
+    default: 'dotnet-backends'
 runs:
   using: 'composite'
   steps:
@@ -35,7 +37,19 @@ runs:
       uses: actions/checkout@v3
       with:
         path: "deploy"
-    - name: "test"
+    - name: Define registry
+      id: registry
       shell: bash
       run: |
-        ls -al ./deploy
+        set -e
+        if [ "${{ inputs.registry }}" != "" ]; then
+          echo "registry=${{ inputs.registry }}" >> $GITHUB_OUTPUT
+        else
+          echo "registry=${{ inputs.team }}/${{ inputs.app-name }}" >> $GITHUB_OUTPUT
+        fi
+    - uses: FinalCAD/AppEcrAction@v1.0
+      name: ECR step
+      with:
+        aws-role: ${{ inputs.aws-role }}
+        environment: ${{ inputs.environment }}
+        registry: ${{ steps.registry.outputs.registry }}
