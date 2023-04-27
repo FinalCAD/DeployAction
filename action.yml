@@ -1,5 +1,5 @@
 name: 'Deploy apps'
-description: 'Update charts for deploy'
+description: 'Action for deploy'
 inputs:
   app-name:
     description: 'Application id'
